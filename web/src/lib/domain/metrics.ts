@@ -29,6 +29,14 @@ export const ION_SYMBOLS: Record<Ion, string> = {
   Sodium: "Na⁺",
 };
 
+/** CSS color tokens for each ion (validated categorical slots, fixed order). */
+export const ION_COLORS: Record<Ion, string> = {
+  Calcium: "var(--ion-calcium)",
+  Chloride: "var(--ion-chloride)",
+  Potassium: "var(--ion-potassium)",
+  Sodium: "var(--ion-sodium)",
+};
+
 export function isIon(value: string): value is Ion {
   return (IONS as readonly string[]).includes(value);
 }

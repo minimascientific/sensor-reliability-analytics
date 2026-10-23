@@ -11,6 +11,8 @@ const serverEnvSchema = z.object({
     .regex(/^postgres(ql)?:\/\//, "DATABASE_URL must be a postgres:// connection string."),
   /** PEM contents of the database server's CA certificate (recommended for Supabase). */
   DATABASE_CA_CERT: z.string().optional(),
+  /** Maximum pooled connections (keep small for serverless hosting). */
+  DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
   /**
    * Where the data comes from. `fixture` is the local preview database with
    * generated sample data; the UI labels it so it is never mistaken for the

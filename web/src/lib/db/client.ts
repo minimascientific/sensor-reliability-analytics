@@ -10,9 +10,9 @@ import type { Queryable } from "./types";
  * lets `sslmode` in the connection string override an explicit `ssl` object,
  * so those parameters are removed from the URL in that case.
  */
-export function buildPoolConfig(databaseUrl: string, caCert?: string): PoolConfig {
+export function buildPoolConfig(databaseUrl: string, caCert?: string, max = 5): PoolConfig {
   const base: PoolConfig = {
-    max: 5,
+    max,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 10_000,
     statement_timeout: 15_000,
@@ -40,7 +40,9 @@ const globalForDb = globalThis as unknown as { srPool?: Pool };
 function getPool(): Pool {
   if (!globalForDb.srPool) {
     const env = getServerEnv();
-    globalForDb.srPool = new Pool(buildPoolConfig(env.DATABASE_URL, env.DATABASE_CA_CERT));
+    globalForDb.srPool = new Pool(
+      buildPoolConfig(env.DATABASE_URL, env.DATABASE_CA_CERT, env.DATABASE_POOL_MAX),
+    );
   }
   return globalForDb.srPool;
 }
