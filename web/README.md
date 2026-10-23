@@ -28,8 +28,8 @@ Open http://localhost:3000. This starts a local in-process Postgres (PGlite) wit
 ### Option B: run against Supabase
 
 1. Copy `.env.example` to `.env.local`. It's git-ignored, so credentials never get committed.
-2. Set `DATABASE_URL` to the Supabase connection pooler URI (Project Settings → Database).
-3. Recommended: set `DATABASE_CA_CERT` to Supabase's CA certificate, so the TLS connection is verified. See the comments in `.env.example`.
+2. Set `DATABASE_URL` to the **direct connection** string from the Supabase dashboard (**Connect**). This is what works for local development today. The session pooler failed with authentication and `auth_query` timeout errors, which is still to be investigated before deployment (`docs/DECISIONS.md` D-012).
+3. Set `DATABASE_CA_CERT` to the contents of Supabase's CA certificate (Database settings → SSL configuration), so the TLS connection is verified. Keep the downloaded `.crt` file outside the repository; `*.crt` is git-ignored as a safeguard.
 4. Run:
 
 ```bash
@@ -72,7 +72,7 @@ scripts/preview-fixture.ts
 The dashboard only uses facts verified in [`../docs/DATA_VERIFICATION.md`](../docs/DATA_VERIFICATION.md):
 
 - Pass/fail comes only from stored `pass_fail` values. No specification limits are assumed.
-- `failure_mode` (open issue) and `device_status` (always `Active`) are not used. A test fails if any overview query references them.
+- `failure_mode` (open issue) and `device_status` (always `Active`) are excluded from quality KPIs until their meaning is validated. A test fails if any Executive Overview query references them.
 - Every pass rate is labelled per record or per device and shows its numerator and denominator.
 
 ## Adding shadcn/ui components
