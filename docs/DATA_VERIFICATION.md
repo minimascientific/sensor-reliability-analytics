@@ -1,7 +1,7 @@
 # Data Verification: Supabase Synthetic Dataset
 
 **Status:** in progress, last updated 2026-10-23
-**Scope:** what is verified about the existing synthetic dataset, what is assumed, and what is unresolved, before the Next.js dashboard relies on it.
+**Scope:** what is verified about the existing synthetic dataset, what is assumed, and what is unresolved, before the Next.js dashboard relies on it. This is the only document that states verified numbers. Patterns the generator was *designed* to produce, and earlier unreproduced findings, are in [HYPOTHESES.md](HYPOTHESES.md).
 
 ## Ground rules
 
@@ -11,7 +11,7 @@
 
 ## 1. Schema
 
-Six tables in the `public` schema. Full column listing: [`db/schema.sql`](../db/schema.sql).
+Six tables in the `public` schema. Full column listing: [`db/schema.sql`](../db/schema.sql), a hand-maintained snapshot used for documentation and tests. It is not synchronized with Supabase automatically.
 
 ```mermaid
 erDiagram
@@ -59,7 +59,7 @@ The Streamlit prototype hard-codes "20" lots, "10,000" devices and "240,000+" te
 | `pass_fail` (all three test tables) | `Pass`, `Fail` | Exactly two values, consistent capitalization, never null. Safe to filter on `= 'Pass'`. |
 | `stress_profile` | Baseline, High Humidity, High Temperature, Thermal Cycling | 10,000 records each. |
 | `station_type` | Characterization, Reliability, Environmental | Two stations of each type. |
-| `device_status` | `Active` only | **Uninformative**: all 10,000 devices are `Active`, including devices that failed tests. Not used by the dashboard. |
+| `device_status` | `Active` only | **Uninformative**: all 10,000 devices are `Active`, including devices that failed tests. Excluded from quality KPIs until its meaning is validated. |
 | `failure_mode` | Calibration Drift, Excessive Noise, Reduced Sensitivity, null | **Open issue**, see section 3. |
 
 ### 2.3 Characterization grain: exactly one record per device × ion (Q3, Q4, Q7)
@@ -101,7 +101,7 @@ Also, *Excessive Noise* is the most frequent mode, but `reliability_tests` has n
 
 **How to resolve:** Q14 cross-tabulates `pass_fail` × `failure_mode` with mean drift, error and sensitivity change. If explanation 1 is right, records flagged *Calibration Drift* should show clearly larger drift, and so on for the other modes. The original generator script would settle it directly.
 
-**Impact on the application:** the failure-mode Pareto chart is **excluded** until this is resolved. No chart, KPI or filter uses `failure_mode`.
+**Impact on the application:** `failure_mode` is **excluded from quality KPIs**, failure counts and any failure-mode Pareto chart until this is resolved. It remains a subject of investigation (Q14, and hypothesis N-01 in [HYPOTHESES.md](HYPOTHESES.md)).
 
 ## 4. Unverified assumptions and pending checks
 

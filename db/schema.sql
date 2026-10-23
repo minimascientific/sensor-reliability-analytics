@@ -7,9 +7,16 @@
 --   * information_schema.columns   (column names, types, nullability, defaults)
 --   * pg_constraint                (primary and foreign keys)
 --
--- This file is NOT a migration. Do not run it against Supabase: the tables
--- already exist and hold the synthetic dataset. It exists so the schema is
--- reviewable and version-controlled next to the application that queries it.
+-- This file is a HAND-MAINTAINED SNAPSHOT, not a migration, and it is NOT
+-- synchronized with Supabase automatically. Do not run it against Supabase:
+-- the tables already exist and hold the synthetic dataset.
+--
+-- It has two uses:
+--   * documentation: the schema is reviewable next to the code that queries it
+--   * tests: web/src/test/fixture-db.ts builds an in-process Postgres (PGlite)
+--     from this file, so query tests run against these table definitions
+--
+-- If the Supabase schema changes, update this file in the same pull request.
 --
 -- Not captured here (still to verify, see docs/DATA_VERIFICATION.md):
 --   * indexes beyond the automatic primary-key indexes
