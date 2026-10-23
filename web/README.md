@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sensor Reliability Analytics: web app
 
-## Getting Started
+Next.js application for the Sensor Reliability Analytics Platform. It replaces the Streamlit prototype in the repository root, which is kept unchanged as a reference.
 
-First, run the development server:
+**Built so far:** the Executive Overview page, which shows per-record and per-device pass rates for each test stage, rolled throughput yield by lot, device pass rate by ion, and reliability pass rate by test day.
+
+## Requirements
+
+- Node.js 22 or later
+- For real data: a connection string for the Supabase Postgres database
+
+## Run it
+
+All commands run from this `web/` folder.
+
+```bash
+npm install
+```
+
+### Option A: preview with sample data (no database needed)
+
+```bash
+npm run preview:fixture
+```
+
+Open http://localhost:3000. This starts a local in-process Postgres (PGlite) with the documented schema from `../db/schema.sql` and **generated sample data**, then starts the dev server against it. Every page shows a "Sample data" notice, because these numbers say nothing about the real dataset. Stop it with Ctrl+C.
+
+### Option B: run against Supabase
+
+1. Copy `.env.example` to `.env.local`. It's git-ignored, so credentials never get committed.
+2. Set `DATABASE_URL` to the Supabase connection pooler URI (Project Settings → Database).
+3. Recommended: set `DATABASE_CA_CERT` to Supabase's CA certificate, so the TLS connection is verified. See the comments in `.env.example`.
+4. Run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The connection settings are server-only. Queries run in React Server Components, and no database credential reaches the browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+|---|---|
+| `npm run typecheck` | Generates route types and runs the TypeScript compiler |
+| `npm run lint` | ESLint (Next.js core-web-vitals and TypeScript rules) |
+| `npm test` | Vitest. Query tests run the real SQL against PGlite with a hand-designed fixture whose answers are worked out by hand. |
+| `npm run build` | Production build. It never connects to the database: data is fetched at request time. |
 
-## Learn More
+CI runs all four on every pull request (`.github/workflows/web-ci.yml`).
 
-To learn more about Next.js, take a look at the following resources:
+## Where things live
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/(dashboard)/      page shell, Executive Overview page, error boundary
+  components/
+    overview/           page sections (yield cascade, lots table, dot plot, notes)
+    charts/             Recharts client components
+    layout/             sidebar and navigation
+    ui/                 shadcn/ui primitives
+  lib/
+    db/                 server-only Postgres pool and the Queryable interface
+    queries/            SQL for each page, with tests
+    domain/             metric definitions, ion metadata
+  test/                 PGlite fixture builders (tests and preview)
+scripts/preview-fixture.ts
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data rules
 
-## Deploy on Vercel
+The dashboard only uses facts verified in [`../docs/DATA_VERIFICATION.md`](../docs/DATA_VERIFICATION.md):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Pass/fail comes only from stored `pass_fail` values. No specification limits are assumed.
+- `failure_mode` (open issue) and `device_status` (always `Active`) are not used. A test fails if any overview query references them.
+- Every pass rate is labelled per record or per device and shows its numerator and denominator.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Adding shadcn/ui components
+
+`components.json` is configured, so on a machine with normal internet access:
+
+```bash
+npx shadcn@latest add <component>
+```
